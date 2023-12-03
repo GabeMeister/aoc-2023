@@ -15,8 +15,12 @@
   "Print a string but with a newline"
   (format t "~%~a~%" object))
 
-(defvar big-text (uiop:read-file-string "./big.txt"))
-(defvar lines (remove "" (split #\Newline big-text) :test #'equal))
+(defvar small-text "")
+(setq small-text (uiop:read-file-string "./small.txt"))
+(defvar big-text "")
+(setq big-text (uiop:read-file-string "./big.txt"))
+(defvar lines (list))
+(setq lines (remove "" (split #\Newline big-text) :test #'equal))
 
 (defun get-game-number (line)
   (let ((tokens (split #\: line)))
@@ -64,20 +68,22 @@
 (defvar green-total 13)
 (defvar blue-total 14)
 
-(defvar game-total 0)
-(setq game-total 0)
-
-(println lines)
+(defvar power-total 0)
+(setq power-total 0)
 
 (dolist (line lines)
-  (let ((game-id (get-game-number line)))
-    (if (and (<= (get-max-color "red" line) red-total)
-	     (<= (get-max-color "green" line) green-total)
-	     (<= (get-max-color "blue" line) blue-total))
-	(progn
-	  (format t "GAME #~a WORKS~%" game-id)
-	  (setq game-total (+ game-total game-id))))))
+  (let ((game-id (get-game-number line))
+	(red-min (get-max-color "red" line))
+	(green-min (get-max-color "green" line))
+	(blue-min (get-max-color "blue" line))
+	(cube-power 0))
+    (setq cube-power (* red-min green-min blue-min))
+    (format t "Red: ~a~%" red-min)
+    (format t "Green: ~a~%" green-min)
+    (format t "Blue: ~a~%" blue-min)
+    (format t "Cube power: ~a~%" cube-power)
+    (setq power-total (+ power-total cube-power))))
 
-(println game-total)
+(println power-total)
 
 
