@@ -1,0 +1,6 @@
+(defparameter my-list nil)
+(format t "~a~%" my-list)
+(push "dog" my-list)
+(setf (cdr (last my-list)) (cons "cat" nil))
+(format t "~a~%" my-list)
+(format t "~a~%" (length my-list))

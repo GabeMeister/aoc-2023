@@ -1,3 +1,5 @@
 .vscode/
 *.fasl
 *.lisp~
+.clj-kondo/
+.lsp/
