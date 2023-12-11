@@ -106,7 +106,7 @@
 (defparameter big-text (uiop:read-file-string "./day4/input-big.txt"))
 (defparameter playground-text (uiop:read-file-string "./day4/input-playground.txt"))
 
-(defparameter lines (split #\newline small-text))
+(defparameter lines (split #\newline big-text))
 
 (println "---------------------")
 
@@ -188,23 +188,48 @@
           (setf i-current-total (get-point-amount i-winning-num-count))
           (setf *overall-total* (+ *overall-total* i-current-total))))
 
+; (defparameter *total-games* 0)
+
+; (loop
+;  (if (<= (length (liszt-elements *l-games*)) 0) (return))
+
+;  (format t "~%Length:~%~a~%" (length (liszt-elements *l-games*)))
+
+;  ;; Pop the first game off and count it
+;  (let ((i-current-game (liszt-pop-front *l-games*)))
+;    (setf *total-games* (+ 1 *total-games*))
+
+;    (let ((i-additional (get-hash *h-game-to-pts* i-current-game))
+;          (i-next-game-start-idx (+ i-current-game 1)))
+;      (loop for i-addl-idx from i-next-game-start-idx to (+ i-current-game i-additional)
+;            do (progn
+;                (liszt-push-back *l-games* i-addl-idx))))))
+
+; (format t "~%=== *total-games* ===~%~a~%" *total-games*)
+
+
+(defparameter *h-game-to-copies* (create-hash))
+(defun calculate-copies (i-game i-pts)
+  (let ((current-game-copies nil))
+
+    ;; Add just the original game itself
+    (if (not (get-hash *h-game-to-copies* i-game))
+        (update-hash *h-game-to-copies* i-game 1)
+        (update-hash *h-game-to-copies* i-game (+ 1 (get-hash *h-game-to-copies* i-game))))
+
+    (setf current-game-copies (get-hash *h-game-to-copies* i-game))
+
+    ;; Add the copies
+    (loop for i from (+ i-game 1) to (+ i-game i-pts)
+          do
+            (if (not (get-hash *h-game-to-copies* i))
+                (update-hash *h-game-to-copies* i current-game-copies)
+                (update-hash *h-game-to-copies* i (+ (get-hash *h-game-to-copies* i) current-game-copies))))))
+
+(maphash #'calculate-copies *h-game-to-pts*)
+
+(print-hash *h-game-to-copies*)
 (defparameter *total-games* 0)
+(maphash (lambda (key val) (progn (format nil "~a~%" key) (setf *total-games* (+ *total-games* val)))) *h-game-to-copies*)
 
-(loop
- (if (<= (length (liszt-elements *l-games*)) 0) (return))
-
- (format t "~%Length:~%~a~%" (length (liszt-elements *l-games*)))
-
- ;; Pop the first game off and count it
- (let ((i-current-game (liszt-pop-front *l-games*)))
-   (setf *total-games* (+ 1 *total-games*))
-
-   (let ((i-additional (get-hash *h-game-to-pts* i-current-game))
-         (i-next-game-start-idx (+ i-current-game 1)))
-     (loop for i-addl-idx from i-next-game-start-idx to (+ i-current-game i-additional)
-           do (progn
-               (liszt-push-back *l-games* i-addl-idx))))))
-
-(format t "~%=== *total-games* ===~%~a~%" *total-games*)
-
-(print-hash *h-game-to-pts*)
+(format t "Total games: ~a~%" *total-games*)
