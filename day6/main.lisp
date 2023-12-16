@@ -114,5 +114,57 @@
 ;; CURRENT DAY
 ;;
 
-(dolist (line lines)
-  (println line))
+(defun get-times-from-line (line)
+  (let ((tokens nil))
+    (setf tokens (split #\space line))
+    (setf tokens (remove-if (lambda (token) (string= token "Time:")) tokens))
+    (setf tokens (mapcar (lambda (token) (parse-integer token)) tokens))
+
+    tokens))
+
+(defun get-distance-from-line (line)
+  (let ((tokens nil))
+    (setf tokens (split #\space line))
+    (setf tokens (remove-if (lambda (token) (string= token "Distance:")) tokens))
+    (setf tokens (mapcar (lambda (token) (parse-integer token)) tokens))
+
+    tokens))
+
+(defun get-num-winning-holds (sec record-distance)
+  (let ((num-winning-holds 0))
+    (loop for s from 1 to (- sec 1) do
+            ;; 1
+            ;; (sec - s) * s
+            ;; (7 - 1) * 1
+            ;; (7 - 2) * 2
+            (if (> (* s (- sec s)) record-distance)
+                (incf num-winning-holds)))
+
+    num-winning-holds))
+
+(defparameter *times-list* nil)
+(defparameter *distance-list* nil)
+
+(setf *times-list* (get-times-from-line (pop lines)))
+(format t "~%=== *times-list* ===~%~a~%" *times-list*)
+(setf *distance-list* (get-distance-from-line (pop lines)))
+(format t "~%=== *distance-list* ===~%~a~%" *distance-list*)
+
+(defparameter *winning-holds-list* nil)
+
+(loop for race-time in *times-list*
+      for record-distance in *distance-list* do
+        (let ((winning-holds (get-num-winning-holds race-time record-distance)))
+          (format t "Race Time: ~a sec | Record Distance: ~a~%" race-time record-distance)
+          (format t "The number of winning holds: ~a~%" winning-holds)
+          (push winning-holds *winning-holds-list*)))
+
+(format t "~%=== *winning-holds-list* ===~%~a~%" *winning-holds-list*)
+
+(defparameter *total-winning-holds* (reduce (lambda (x y) (* x y)) *winning-holds-list*))
+
+(format t "~%=== *total-winning-holds* ===~%~a~%" *total-winning-holds*)
+
+(println "BEFORE")
+(println (get-num-winning-holds 52947594 426137412791216))
+(println "AFTER")

@@ -2,6 +2,7 @@
 (ql:quickload :split-sequence)
 (ql:quickload :alexandria)
 
+
 (defun string-includes-p (needle haystack)
   (not (null (search needle haystack))))
 
@@ -136,9 +137,9 @@
 (defun create-range-from-line (line)
   (let ((tokens (split #\space line)))
     (make-num-range
-      :low (parse-integer (nth 1 tokens))
-      :high (+ (parse-integer (nth 1 tokens)) (parse-integer (nth 2 tokens)) -1)
-      :diff (- (parse-integer (nth 0 tokens)) (parse-integer (nth 1 tokens))))))
+     :low (parse-integer (nth 1 tokens))
+     :high (+ (parse-integer (nth 1 tokens)) (parse-integer (nth 2 tokens)) -1)
+     :diff (- (parse-integer (nth 0 tokens)) (parse-integer (nth 1 tokens))))))
 
 (defun apply-mapping (i-val l-mappings)
   (dolist (mapping (liszt-elements l-mappings))
