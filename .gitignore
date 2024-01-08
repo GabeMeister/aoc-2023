@@ -3,3 +3,4 @@
 *.lisp~
 .clj-kondo/
 .lsp/
+.calva/
