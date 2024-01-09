@@ -108,11 +108,6 @@
   (let [cards (str/split hand-str #"")]
     (reduce update-card-map {} cards)))
 
-(defn get-hand-type
-  "Given a string that represents a hand, determine
-   the type and return it as a string"
-  [hand-str]
-  hand-str)
 
 (defn parse-hand
   "Given a string (for example, `32T3K 765`), parse out the hand and the corresponding bid and return it in a map"
@@ -134,7 +129,29 @@
         hand (get tokens 0)
         hand-map (get-hand-map hand)
         bid (Integer/parseInt (get tokens 1))]
-    {:hand-map hand-map :bid bid}))
+    {:hand-map hand-map :bid bid :str hand}))
+
+(defn better-card-comparator
+  [hand-1-str hand-2-str]
+  (let [hand-1-vec (str/split hand-1-str #"")
+        hand-2-vec (str/split hand-2-str #"")]
+    (loop [vec-1 hand-1-vec
+           vec-2 hand-2-vec]
+      (if (or
+           (= (count vec-1) 0)
+           (= (count vec-2) 0))
+        0
+        (let [letter-1 (first vec-1)
+              letter-2 (first vec-2)
+              keyword-1 (keyword (str letter-1))
+              keyword-2 (keyword (str letter-2))
+              card-rank-1 (keyword-1 CARD-RANK)
+              card-rank-2 (keyword-2 CARD-RANK)]
+          (cond
+            (< card-rank-1 card-rank-2) -1
+            (> card-rank-1 card-rank-2) 1
+            (= card-rank-1 card-rank-2) (recur (rest vec-1) (rest vec-2))))))))
+
 
 
 (defn hand-comparator
@@ -142,26 +159,53 @@
   and 1 if the second hand is higher, and 0 if they are the same."
   [hand-bid-1 hand-bid-2]
   (let [hand-1-type (parse-hand (:hand-map hand-bid-1))
-        hand-2-type (parse-hand (:hand-map hand-bid-2))]
-    (println hand-1-type hand-2-type)
-    -1))
+        hand-2-type (parse-hand (:hand-map hand-bid-2))
+        hand-1-key (keyword hand-1-type)
+        hand-2-key (keyword hand-2-type)
+        hand-1-pts (hand-1-key HAND-TO-PTS)
+        hand-2-pts (hand-2-key HAND-TO-PTS)]
+    (cond
+      (< hand-1-pts hand-2-pts) -1
+      (> hand-1-pts hand-2-pts) 1
+      (= hand-1-pts hand-2-pts) (better-card-comparator
+                                 (:str hand-bid-1)
+                                 (:str hand-bid-2)))))
+
 
 (defn get-input
   [path]
   (str/split-lines (slurp path)))
 
 
-;; (def SHORT-INPUT-VEC (get-input "./input/short.txt"))
-(def TEMP-INPUT-VEC (get-input "./input/temp.txt"))
-;; (def LONG-INPUT-VEC (get-input "./input/long.txt"))
+;; (def INPUT-VEC (get-input "./input/short.txt"))
+;; (def INPUT-VEC (get-input "./input/temp.txt"))
+(def INPUT-VEC (get-input "./input/long.txt"))
+
+(defn print-hand-bid
+  [hand-bid]
+  (prn (:hand-map hand-bid))
+  (prn (:bid hand-bid))
+  (prn (:str hand-bid)))
+
+(defn rank-bid-reducer
+  [total rank-bid]
+  (let [rank-amt (:rank rank-bid)
+        bid-amt (:bid rank-bid)]
+    (+ total (* rank-amt
+                bid-amt))))
 
 (defn task
   []
-  (let [all-hand-bids (into [] (map parse-line TEMP-INPUT-VEC))
+  (let [all-hand-bids (into [] (map parse-line INPUT-VEC))
         all-hand-bids-sorted (sort hand-comparator all-hand-bids)
+        rank-and-bids-list (map-indexed
+                            (fn [idx hand-bid] {:rank (+ 1 idx)
+                                                :bid (:bid hand-bid)}) all-hand-bids-sorted)
+        final-score (reduce rank-bid-reducer 0 rank-and-bids-list)
         ;;
         ]
-    (println all-hand-bids)))
+    (println "Final Score: " final-score)))
+
 
 
 
